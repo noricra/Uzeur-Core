@@ -80,7 +80,7 @@ SMTP_PASSWORD = core_settings.SMTP_PASSWORD
 # Configuration crypto
 #MARKETPLACE_CONFIG = core_settings.MARKETPLACE_CONFIG
 
-# Platform commission (fixed 5%)
+# Platform commission
 #PLATFORM_COMMISSION_RATE = core_settings.PLATFORM_COMMISSION_RATE
 
 # Configuration logging
