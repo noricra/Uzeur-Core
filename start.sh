@@ -4,10 +4,10 @@
 
 set -e  # Exit on error
 
-echo "🚀 Starting Uzeur Marketplace..."
+echo " Starting Uzeur Marketplace..."
 echo ""
-echo "📡 IPN Server will start on port ${PORT:-8000}"
-echo "🤖 Telegram Bot will start in polling mode"
+echo " IPN Server will start on port ${PORT:-8000}"
+echo " Telegram Bot will start in polling mode"
 echo ""
 
 # Launch app.main which handles both IPN server and Telegram bot
