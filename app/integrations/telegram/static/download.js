@@ -263,3 +263,31 @@ function setupDownloadButton() {
         }
     });
 }
+
+// Initialize on page load
+window.addEventListener('DOMContentLoaded', () => {
+    initDOMElements();
+    setupDownloadButton();
+    verifyPurchase();
+});
+
+// Handle errors globally
+window.addEventListener('error', (event) => {
+    console.error('Global error:', event.error);
+    // Send error to backend for logging
+    fetch('/api/log-client-error', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            error_type: 'download_error',
+            details: {
+                message: event.error?.message || 'Unknown error',
+                stack: event.error?.stack,
+                product_id: productId,
+                user_id: userId
+            },
+            user_id: userId
+        })
+    }).catch(err => console.error('Failed to log error:', err));
+});
+
