@@ -696,12 +696,6 @@ class CallbackRouter:
             await self.bot.buy_handlers.show_product_details(self.bot, query, product_id, lang)
             return True
 
-        # Mark payment as paid (test feature)
-        if callback_data.startswith('mark_paid_'):
-            product_id = callback_data.replace('mark_paid_', '')
-            await self.bot.buy_handlers.mark_as_paid(self.bot, query, product_id, lang)
-            return True
-
         # Seller products pagination
         if callback_data.startswith('my_products_page_'):
             page = int(callback_data.replace('my_products_page_', ''))
