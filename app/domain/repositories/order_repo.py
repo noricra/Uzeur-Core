@@ -108,38 +108,6 @@ class OrderRepository:
         finally:
             put_connection(conn)
 
-    def get_orders_by_buyer(self, buyer_user_id: int) -> List[Dict]:
-        conn = get_connection()
-        # PostgreSQL uses RealDictCursor
-        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        try:
-            cursor.execute(
-                'SELECT * FROM orders WHERE buyer_user_id = %s ORDER BY created_at DESC',
-                (buyer_user_id,)
-            )
-            rows = cursor.fetchall()
-            return [row for row in rows]
-        except psycopg2.Error:
-            return []
-        finally:
-            put_connection(conn)
-
-    def get_orders_by_seller(self, seller_user_id: int) -> List[Dict]:
-        conn = get_connection()
-        # PostgreSQL uses RealDictCursor
-        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        try:
-            cursor.execute(
-                'SELECT * FROM orders WHERE seller_user_id = %s ORDER BY created_at DESC',
-                (seller_user_id,)
-            )
-            rows = cursor.fetchall()
-            return [row for row in rows]
-        except psycopg2.Error:
-            return []
-        finally:
-            put_connection(conn)
-
     def check_user_purchased_product(self, buyer_user_id: int, product_id: str) -> bool:
         conn = get_connection()
         cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
