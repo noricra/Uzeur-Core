@@ -141,7 +141,7 @@ class PaymentService:
                     return val
             return 1.10
         except Exception:
-            return self._fx_cache.get('eur_usd', {}).get('value', 1.10)
+            return self._fx_cache.get('eur_usd', {}).get('value', 1.17)
 
     async def _get_exact_crypto_amount(self, amount_usd: float, pay_currency: str) -> Optional[float]:
         """Get exact crypto amount using NOWPayments estimate"""
