@@ -157,8 +157,3 @@ class NowPaymentsClient:
         except Exception as exc:
             logger.error(f"NOWPayments get_payment exception payment_id={payment_id} error={exc}")
             return None
-
-    def list_currencies(self) -> List[str]:
-        """Return accepted currencies: BTC, ETH, SOL, USDT(Solana), USDC(Solana)"""
-        return ["btc", "eth", "sol", "usdtsol", "usdcsol"]
-
