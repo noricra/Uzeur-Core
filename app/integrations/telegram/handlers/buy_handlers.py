@@ -2236,54 +2236,7 @@ Contact support with your Order ID"""
                 reply_markup=InlineKeyboardMarkup(keyboard)
             )
 
-    async def mark_as_paid(self, bot, query, product_id: str, lang: str):
-        """Mark order as paid (test functionality)"""
-        try:
-            user_id = query.from_user.id
-
-            # Create mock order in database
-            conn = bot.get_db_connection()
-            cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-
-            # Insert order
-            order_id = f"ord_{user_id}_{product_id}_{int(datetime.now().timestamp())}"
-            cursor.execute('''
-                INSERT INTO orders
-                (order_id, buyer_user_id, product_id, payment_status, created_at)
-                VALUES (?, ?, ?, ?, ?)
-                ON CONFLICT DO NOTHING
-            ''', (order_id, user_id, product_id, 'completed', datetime.now().isoformat()))
-
-            conn.commit()
-            put_connection(conn)
-
-            # Get product details for confirmation
-            product = bot.get_product_by_id(product_id)
-            title = product.get('title', 'Produit') if product else 'Produit'
-
-            await query.edit_message_text(
-                f"✅ **Paiement confirmé !**\n\n📦 {title}\n\n🎉 Votre commande est maintenant disponible dans votre bibliothèque.",
-                reply_markup=InlineKeyboardMarkup([
-                    [InlineKeyboardButton("📚 Ma bibliothèque" if lang == 'fr' else "📚 My library",
-                                        callback_data='library')],
-                    [InlineKeyboardButton("⬇️ Télécharger maintenant" if lang == 'fr' else "⬇️ Download now",
-                                        callback_data=f'download_product_{product_id}')],
-                    [back_to_main_button(lang)]
-                ]),
-                parse_mode='Markdown'
-            )
-            await query.answer()
-
-        except (psycopg2.Error, Exception) as e:
-            logger.error(f"Error marking as paid: {e}")
-            await query.edit_message_text(
-                "❌ Erreur lors de la confirmation du paiement." if lang == 'fr' else "❌ Payment confirmation error.",
-                reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton("Retour" if lang == 'fr' else "Back", callback_data='back_main')
-                ]])
-            )
-            await query.answer()
-
+    
     async def _display_payment_details(self, query, payment_data, title, price_usd, order_id, product_id, crypto_code, lang):
         """Display comprehensive payment details with QR code and exact amounts"""
         await query.answer()
