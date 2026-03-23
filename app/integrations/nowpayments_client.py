@@ -162,27 +162,3 @@ class NowPaymentsClient:
         """Return accepted currencies: BTC, ETH, SOL, USDT(Solana), USDC(Solana)"""
         return ["btc", "eth", "sol", "usdtsol", "usdcsol"]
 
-    async def get_all_solana_currencies(self) -> List[str]:
-        """Diagnostic: List all Solana-related currencies from NOWPayments API"""
-        if not self.api_key:
-            return []
-        try:
-            async with httpx.AsyncClient() as client:
-                response = await client.get(
-                    f"{self.BASE_URL}/currencies",
-                    headers={"x-api-key": self.api_key},
-                    timeout=10.0
-                )
-                if response.status_code == 200:
-                    all_currencies = response.json().get("currencies", [])
-                    # Filter for Solana-related currencies
-                    sol_currencies = [c for c in all_currencies if 'sol' in c.lower() or 'spl' in c.lower()]
-                    logger.info(f"🔍 Solana currencies available: {sol_currencies}")
-                    return sol_currencies
-                else:
-                    logger.error(f"Failed to fetch currencies: {response.status_code}")
-                    return []
-        except Exception as e:
-            logger.error(f"Exception fetching currencies: {e}")
-            return []
-
