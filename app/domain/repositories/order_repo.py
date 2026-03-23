@@ -155,22 +155,6 @@ class OrderRepository:
         finally:
             put_connection(conn)
 
-    def increment_download_count(self, product_id: str, buyer_user_id: int) -> bool:
-        conn = get_connection()
-        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        try:
-            cursor.execute(
-                'UPDATE orders SET download_count = download_count + 1 WHERE product_id = %s AND buyer_user_id = %s',
-                (product_id, buyer_user_id)
-            )
-            conn.commit()
-            return cursor.rowcount > 0
-        except psycopg2.Error:
-            conn.rollback()
-            return False
-        finally:
-            put_connection(conn)
-
     def create_order(self, order: Dict) -> bool:
         """Alias for insert_order to maintain compatibility"""
         return self.insert_order(order)
