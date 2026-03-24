@@ -705,7 +705,7 @@ class BuyHandlers:
 
         # Construire la liste des cryptos depuis settings.CRYPTO_DISPLAY_INFO
         crypto_lines = []
-        priority_order = ['btc', 'eth', 'sol', 'usdcsol', 'usdtsol']  # Ordre d'affichage
+        priority_order = ['btc', 'eth', 'sol', 'usdtsol', 'usdcsol']  # Ordre d'affichage
 
         for crypto_code in priority_order:
             if crypto_code in settings.CRYPTO_DISPLAY_INFO:
