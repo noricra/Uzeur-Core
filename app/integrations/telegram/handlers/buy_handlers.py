@@ -710,11 +710,9 @@ class BuyHandlers:
         for crypto_code in priority_order:
             if crypto_code in settings.CRYPTO_DISPLAY_INFO:
                 display_name, time_info = settings.CRYPTO_DISPLAY_INFO[crypto_code]
-                # Extraire le nom sans emoji et le temps
-                name_clean = display_name.split()[1] if ' ' in display_name else display_name
+           
                 time_clean = time_info.replace('⚡ ', '')
-
-                crypto_lines.append(f"<b>{name_clean}</b> - {time_clean}")
+                crypto_lines.append(f"<b>{display_name,}</b> - {time_clean}")
 
         crypto_list_text = '\n'.join(crypto_lines)
 
