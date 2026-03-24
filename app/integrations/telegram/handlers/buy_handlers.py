@@ -710,9 +710,9 @@ class BuyHandlers:
         for crypto_code in priority_order:
             if crypto_code in settings.CRYPTO_DISPLAY_INFO:
                 display_name, time_info = settings.CRYPTO_DISPLAY_INFO[crypto_code]
-           
+
                 time_clean = time_info.replace('⚡ ', '')
-                crypto_lines.append(f"<b>{display_name,}</b> - {time_clean}")
+                crypto_lines.append(f"<b>{display_name}</b> - {time_clean}")
 
         crypto_list_text = '\n'.join(crypto_lines)
 
