@@ -107,6 +107,48 @@ async def scrape_gumroad_profile(profile_url: str) -> List[Dict]:
                 script_len = len(script.string) if script.string else 0
                 logger.debug(f"[GUMROAD] Script {idx}: id='{script_id}', type='{script_type}', length={script_len}")
 
+            # Strategie 0: Inertia.js (Gumroad a migré de Next.js vers Inertia.js)
+            inertia_version = resp.headers.get('x-revision', '')
+            if inertia_version and '__NEXT_DATA__' not in html_content:
+                logger.info(f"[GUMROAD] Trying Inertia.js strategy (version: {inertia_version})")
+                inertia_req_headers = {
+                    **headers,
+                    'X-Inertia': 'true',
+                    'X-Inertia-Version': inertia_version,
+                    'Accept': 'text/html, application/xhtml+xml',
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+                try:
+                    inertia_resp = await client.get(profile_url, headers=inertia_req_headers)
+                    if inertia_resp.status_code == 200:
+                        try:
+                            inertia_data = inertia_resp.json()
+                            logger.info(f"[GUMROAD] Inertia response keys: {list(inertia_data.keys())}")
+                            props = inertia_data.get('props', {})
+                            logger.info(f"[GUMROAD] Inertia props keys: {list(props.keys())}")
+                            products_raw = (
+                                props.get('products') or
+                                props.get('seller', {}).get('products') or
+                                []
+                            )
+                            if products_raw and isinstance(products_raw, list):
+                                logger.info(f"[GUMROAD] Inertia: Found {len(products_raw)} products")
+                                for p in products_raw:
+                                    product = parse_nextjs_product(p, profile_url)
+                                    if product:
+                                        products.append(product)
+                                if products:
+                                    products = await enrich_products_parallel(client, products, headers)
+                                    return products
+                            else:
+                                logger.warning(f"[GUMROAD] Inertia: No products found in props")
+                        except (json.JSONDecodeError, ValueError) as e:
+                            logger.warning(f"[GUMROAD] Inertia JSON parse failed: {e}")
+                    else:
+                        logger.warning(f"[GUMROAD] Inertia request returned HTTP {inertia_resp.status_code}")
+                except Exception as e:
+                    logger.warning(f"[GUMROAD] Inertia.js strategy failed: {e}")
+
             # Strategie 1: __NEXT_DATA__ (Next.js) - LA MINE D'OR
             logger.info("[GUMROAD] Attempting __NEXT_DATA__ extraction (Next.js)")
             script_tag = soup.find('script', id='__NEXT_DATA__', type='application/json')
@@ -486,6 +528,33 @@ async def fetch_full_description(client: httpx.AsyncClient, product_url: str, he
     Returns:
         Description HTML complete
     """
+    # Strategie 0: Inertia.js pour page produit individuelle
+    try:
+        inertia_req_headers = {
+            **headers,
+            'X-Inertia': 'true',
+            'X-Inertia-Version': '',
+            'Accept': 'text/html, application/xhtml+xml',
+            'X-Requested-With': 'XMLHttpRequest',
+        }
+        inertia_resp = await client.get(product_url, headers=inertia_req_headers, timeout=20.0)
+        if inertia_resp.status_code == 200:
+            try:
+                inertia_data = inertia_resp.json()
+                props = inertia_data.get('props', {})
+                product_data = props.get('product', {})
+                desc_html = product_data.get('description_html', '') or product_data.get('description', '')
+                if desc_html:
+                    logger.info(f"[GUMROAD] Inertia: Found description ({len(desc_html)} chars) for {product_url}")
+                    stats = _extract_gumroad_stats(product_data)
+                    return {'description': desc_html, 'stats': stats}
+                else:
+                    logger.debug(f"[GUMROAD] Inertia product page: no description in props")
+            except (json.JSONDecodeError, ValueError) as e:
+                logger.debug(f"[GUMROAD] Inertia product page parse failed: {e}")
+    except Exception as e:
+        logger.debug(f"[GUMROAD] Inertia product request failed: {e}")
+
     # Retry logic pour gerer rate limiting et timeouts
     max_retries = 3
     soup = None
